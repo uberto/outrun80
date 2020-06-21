@@ -15,20 +15,18 @@ halfH=resH/2
 roadW=2000 --road width
 segL=400   --track segment lenght
 camD=0.84  --camera depth
-
-
-posH=0          --position Horizontal (left-right)
 posV=1500       --position Vertical (high-low)
+
 spd=0           --speed
 prog=0          --current progress on the track 
 trackX=0        --horizontal position of the track
 trackLen = 2000 --length of the track
-dH = 60         --left right delta by keys
+dH = 40         --left right delta by keys
 
 
 function keys()
 
-	if btn(0) and spd < 180 then spd=spd+1 end
+	if btn(0) and spd < 250 then spd=spd+1 end
 	if btn(1) and spd > 0 then spd=spd-1 end
 	if btn(2) and spd > 0 then posH=posH + dH end
 	if btn(3) and spd > 0 then posH=posH - dH end
@@ -45,11 +43,11 @@ end
 
 function trackSeg(ax,ay,az,aw,c)
 
- return 	{x	= ax,	
-         	y = ay,
-         	z = az,
-          w = aw,
-										curve = c}	
+ return {x	= ax,	
+        y = ay,
+        z = az,
+        w = aw,
+		curve = c}	
 end
 
 function project(seg, camX, camY, camZ)
@@ -76,11 +74,11 @@ end
 function calcHeight(seg)
 
   if seg > 300 and seg < 928 then 
-		  return math.sin( (seg-300) / 33.3) * 2000 
+		  return (1+math.cos(3.14+ (seg-300) / 33.3)) * 2000 
 		end
 		
 		if seg > 1500 and seg < 1814 then
-		  return math.sin( (seg-1500) / 33.3) * 3000 
+		  return (1+math.cos(3.14+ (seg-1500) / 33.3)) * 3000 
 		end
 		
 		return 0
@@ -114,7 +112,12 @@ function createTrack()
 		return t
 end
 
----
+function drawSprites(seg)
+
+end
+
+
+---main
 
 track = createTrack()
 
@@ -124,6 +127,7 @@ fps = 60
 cfps = 0
 
 lastFrameSec = time()
+posH=0
 
 function TIC() --main function
 
@@ -145,11 +149,13 @@ function TIC() --main function
 	
 	curr = prog // segL	
 
+ --draw track
  cp = curr % trackLen
- cSeg = track[cp]
-	pX,pY,pW = project(cSeg, posH, posV, prog)
+ seg = track[cp]
+	pX,pY,pW = project(seg, posH, posV, prog)
 	
-	posH = posH - cSeg.curve * spd * 0.1
+	posH = posH - seg.curve * spd * 0.1
+	posY = seg.y + posV
 	dx = 0
 	xx = 0
  minY = resH
@@ -162,26 +168,43 @@ function TIC() --main function
 			dx = dx + seg.curve
 			--trace("x:"..x.." dx"..dx)
 			
-			X,Y,W = project(seg, xx - posH, cSeg.y + posV, prog)
+			X,Y,W = project(seg, xx - posH, posY, prog)
 
    if minY > Y then 
 --trace("curr:" .. curr .." c:".. c.." prog:"..progM.." Y"..Y)
 				
+				far = pY-Y < 0.09
+				
 				alt = (n // 4) % 2 == 0
 						
-			 if alt then grass=5 else grass=11 end
+			 if far or alt then grass=11 else grass=5 end
 			
-				if alt then rumble=6 else rumble=15 end
+				if far or alt then rumble=15 else rumble=6 end
 			
-			 if alt then road=3 else road=7 end
+			 if far or alt then road=7 else road=3 end
 	
 	  
 	   drawQuad(0,  pY, resW,    0, Y, resW, grass)	
-	   drawQuad(pX, pY, pW *1.1, X , Y, W *1.1, rumble)	
+	   drawQuad(pX, pY, pW *1.2, X , Y, W *1.2, rumble)	
 	   drawQuad(pX, pY,	pW,      X	, Y, W, road)	
 
+				if alt then
+					 drawQuad(pX + pW *0.33, pY, pW *0.02, X + W *0.33, Y, W *0.02, rumble)	
+			   drawQuad(pX - pW *0.33, pY, pW *0.02, X - W *0.33, Y, W *0.02, rumble)	
+			  
+				end
     minY = Y
    end
+			
+			--draw objects
+			for n = curr+1, curr+150 do
+	 		c = n % trackLen
+				seg = track[c]
+				
+    drawSprites(seg)
+			end	  
+			
+			
 			pX = X
 			pY = Y
 			pW = W

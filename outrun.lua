@@ -56,9 +56,7 @@ function project(seg, camX, camY, camZ)
 
   if seg.z == camZ then 
 	   scale = camD	
-  elseif seg.z <= camZ then 
-		  trace("!!! segz:"..seg.z.." camZ"..camZ)
-
+  elseif seg.z <= camZ then --second lap
 	   scale = camD / (seg.z + maxProg - camZ)	
 		else 
 	   scale = camD / (seg.z - camZ)	
@@ -77,12 +75,12 @@ end
 
 function calcHeight(seg)
 
-  if seg > 300 and seg < 700 then 
-		  return math.sin( (seg-300) / 30) * 1250 
+  if seg > 300 and seg < 928 then 
+		  return math.sin( (seg-300) / 33.3) * 2000 
 		end
 		
-		if seg > 1500 and seg < 1800 then
-		  return math.sin( (seg-1500) / 30) * 125	0 
+		if seg > 1500 and seg < 1814 then
+		  return math.sin( (seg-1500) / 33.3) * 3000 
 		end
 		
 		return 0
@@ -90,15 +88,15 @@ end
 	
 function calcCurve(seg)
 
-		if seg > 100 and seg < 200 then return 0.5 end 
-		if seg > 100 and seg < 300 then return 1.0 end 
+		if seg > 100 and seg < 150 then return 1.0 end 
+		if seg > 149 and seg < 300 then return 2.0 end 
 
-		if seg > 700 and seg < 800 then return -1.0 end 
-		if seg > 800 and seg < 900 then return -1.5 end 
+		if seg > 700 and seg < 750 then return -1.0 end 
+		if seg > 749 and seg < 900 then return -2.0 end 
 
-		if seg > 1000 and seg < 1100 then return -0.5 end 
-		if seg > 1100 and seg < 1200 then return -1.5 end 
-		if seg > 1300 and seg < 1400 then return 2.0 end
+		if seg > 1000 and seg < 1050 then return -1.0 end 
+		if seg > 1099 and seg < 1300 then return -2.0 end 
+		if seg > 1299 and seg < 1500 then return 2.0 end
 		
 		return 0
 end
@@ -122,9 +120,24 @@ track = createTrack()
 
 maxProg = trackLen * segL
 
-function TIC()
---main function
+fps = 60
+cfps = 0
+
+lastFrameSec = time()
+
+function TIC() --main function
+
 	cls(13)
+	
+	t = time()
+	
+	if t > lastFrameSec + 1000 then
+	  lastFrameSec = t
+			fps = cfps
+			cfps = 1 
+	else
+	  cfps = cfps + 1
+	end
 	
 	keys()
 	
@@ -133,14 +146,14 @@ function TIC()
 	curr = prog // segL	
 
  cp = curr % trackLen
- seg = track[cp]
-	pX,pY,pW = project(seg, posH, posV, prog)
+ cSeg = track[cp]
+	pX,pY,pW = project(cSeg, posH, posV, prog)
 	
-	posH = posH - seg.curve * spd * 0.2
+	posH = posH - cSeg.curve * spd * 0.1
 	dx = 0
 	xx = 0
  minY = resH
- for n = curr+1, curr+100 do
+ for n = curr+1, curr+150 do
 	  
 			c = n % trackLen
 			seg = track[c]
@@ -149,17 +162,16 @@ function TIC()
 			dx = dx + seg.curve
 			--trace("x:"..x.." dx"..dx)
 			
-			X,Y,W = project(seg, xx - posH, posV, prog)
+			X,Y,W = project(seg, xx - posH, cSeg.y + posV, prog)
 
    if minY > Y then 
 --trace("curr:" .. curr .." c:".. c.." prog:"..progM.." Y"..Y)
 				
 				alt = (n // 4) % 2 == 0
-				
 						
 			 if alt then grass=5 else grass=11 end
 			
-				if alt then rumble=0 else rumble=15 end
+				if alt then rumble=6 else rumble=15 end
 			
 			 if alt then road=3 else road=7 end
 	
@@ -176,7 +188,7 @@ function TIC()
 			
 	end
 	
-	print("s:"..spd.."  p:"..cp)
+	print("s:"..spd.." d:"..cp.."  "..fps)
 
 end
 
@@ -202,5 +214,5 @@ end
 -- </SFX>
 
 -- <PALETTE>
--- 000:140c1c44243430346d4e4a4e854c30346524d04648757161597dced27d2c8595a16daa2cd2aa996dc2cadad45edeeed6
+-- 000:140c1c44243430346d616155854c30488d28d04648757161597dced27d2c8595a16daa2cd2aa996dc2cadad45edeeed6
 -- </PALETTE>

@@ -16,6 +16,7 @@ roadW=2000 --road width
 segL=400   --track segment lenght
 camD=0.84  --camera depth
 posV=1500       --position Vertical (high-low)
+skyH=0          --position of Sky
 
 spd=0           --speed
 prog=0          --current progress on the track 
@@ -28,8 +29,14 @@ function keys()
 
 	if btn(0) and spd < 250 then spd=spd+1 end
 	if btn(1) and spd > 0 then spd=spd-1 end
-	if btn(2) and spd > 0 then posH=posH + dH end
-	if btn(3) and spd > 0 then posH=posH - dH end
+	if btn(2) and spd > 0 then 
+	  posH = posH + dH
+		 skyH = skyH + 1
+ end
+	if btn(3) and spd > 0 then 
+	  posH = posH - dH
+		 skyH = skyH - 1
+ end
 end
 
 
@@ -47,7 +54,7 @@ function trackSeg(ax,ay,az,aw,c)
         y = ay,
         z = az,
         w = aw,
-		curve = c}	
+	      	curve = c}	
 end
 
 function project(seg, camX, camY, camZ)
@@ -131,7 +138,6 @@ posH=0
 
 function TIC() --main function
 
-	cls(13)
 	
 	t = time()
 	
@@ -149,6 +155,13 @@ function TIC() --main function
 	
 	curr = prog // segL	
 
+ --draw sky
+	cls(13)
+
+	spr(64, (skyH+100)%resW, 5, -1, 1,0,0,4,4)
+	spr(64, (skyH+20)%resW, 25, -1, 1,0,0,4,4)
+	spr(64, (skyH+200)%resW, 15, -1, 1,0,0,4,4)
+	
  --draw track
  cp = curr % trackLen
  seg = track[cp]
@@ -224,6 +237,22 @@ end
 -- 018:fff800ff88880ffef8880fee88880fee88880fee2222ffee000ffeeeffffeeee
 -- 019:f8fffffff8888888f888f888f8888ffff8888888f2222222ff000fffefffffef
 -- 020:fff800ff88880ffef8880fee88880fee88880fee2222ffee000ffeeeffffeeee
+-- 064:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd00
+-- 065:dddddddddddddddddddd0d00ddd0f0ffd00fffffd0ffffff0fffffff0ffffff2
+-- 066:dddddddddddddddd0dddddddf0ddddddff0dddddff200dddf2a220dd2affa200
+-- 067:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+-- 080:ddd000fad00fffff0fffffffd0ffffff0fffffff0fffffffd0ffffff0fffffff
+-- 081:a22ffffafaa2fffffff22ffffffa22ffffffa2ffffff2fffffa2ffffffffffff
+-- 082:affffafffffffffffffffffffffffffffffffffffffffff2fffff22affffffff
+-- 083:000dddddfff0ddddffff00ddf222ff0d2aa22f20affa2f20ffffaf20fffff20d
+-- 096:d0ffffffd00fffafddd02aa2ddd00220ddddd00ddddddddddddddddddddddddd
+-- 097:ffffffffffffffffff2affff22022aff00d00aaadddd0222ddddd002ddddddd0
+-- 098:ffffffffffffffffffffffffafffaffaafaa22aaaa2200222200dd0000dddddd
+-- 099:fffff20dfffff20dffffff20fffaff20afaaa2202220200d000d0ddddddddddd
+-- 112:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+-- 113:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+-- 114:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+-- 115:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
 -- </TILES>
 
 -- <WAVES>
@@ -237,5 +266,5 @@ end
 -- </SFX>
 
 -- <PALETTE>
--- 000:140c1c44243430346d616155854c30488d28d04648757161597dced27d2c8595a16daa2cd2aa996dc2cadad45edeeed6
+-- 000:140c1c44243459a1ce616155854c30488d28d04648757161597dced27d2c8595a16daa2cd2aa996dc2cadad45edeeed6
 -- </PALETTE>
